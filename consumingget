@@ -1,0 +1,19 @@
+d response        s           4096a    inz              
+d url             s            200a                     
+d pos             s              5p 0 inz               
+                                                        
+      url = 'https://data.fixer.io/api/latest';         
+      pos = %scan(' ':url);                             
+        if pos > 0;                                     
+          url = %trim(%subst(url:1:pos-1));             
+      endif;                                            
+      EXEC SQL                                          
+        SET OPTION COMMIT = *NONE;                      
+        exec sql call QSYS2.QCMDEXC('CHGJOB CCSID(37)');
+      EXEC SQL                                          
+        SELECT DATA INTO :RESPONSE FROM(VALUES          
+        CHAR(SYSTOOLS.HTTPGETCLOB(:URL,''),4096)        
+        ) WS(DATA);                                     
+      EXEC SQL                                          
+        INSERT INTO POOJA/GETPF VALUES(:RESPONSE);      
+      *inlr = *on;                                      
